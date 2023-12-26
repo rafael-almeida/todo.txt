@@ -1,28 +1,26 @@
-use std::fmt;
-
+#[derive(Debug)]
 struct Task {
-    id: String,
+    id: isize,
     title: String,
     completed: bool,
 }
 
-impl fmt::Display for Task {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "Task {{id: {}, title: \"{}\", completed: {}}}",
-            self.id, self.title, self.completed
-        )
-    }
-}
-
-fn main() {
+fn add_task(tasks: &mut Vec<Task>, id: &mut isize, title: String) {
     let task = Task {
-        id: "1".to_string(),
-        title: "First Task".to_string(),
+        id: *id,
+        title: format!("{title} {}", id.to_string()),
         completed: false,
     };
 
-    println!("Hello, world!");
-    println!("{}", task);
+    *id += 1;
+    tasks.push(task);
+}
+
+fn main() {
+    let mut index: isize = 0;
+    let mut tasks: Vec<Task> = Vec::new();
+    add_task(&mut tasks, &mut index, "Task".to_string());
+    add_task(&mut tasks, &mut index, "Task".to_string());
+    add_task(&mut tasks, &mut index, "Task".to_string());
+    println!("{:#?}", tasks);
 }
