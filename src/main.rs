@@ -87,6 +87,10 @@ fn add_task(tasks: &mut Vec<Task>, title: String) {
     tasks.push(task);
 }
 
+fn remove_task(tasks: &mut Vec<Task>, id: isize) {
+    tasks.retain(|task| task.id != id);
+}
+
 fn toggle_task(tasks: &mut Vec<Task>, id: isize) {
     for task in tasks {
         if task.id == id {
@@ -136,6 +140,7 @@ fn main() -> std::io::Result<()> {
     // add_task(&mut tasks, "Task".to_string());
     // add_task(&mut tasks, "Task".to_string());
     toggle_task(&mut tasks, 0);
+    remove_task(&mut tasks, 1);
 
     display_tasks(&tasks);
 
