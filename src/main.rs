@@ -1,6 +1,7 @@
 use std::fs::{File, OpenOptions};
 use std::io::{self, prelude::*};
 use std::num::ParseIntError;
+use std::os::unix::fs::FileExt;
 use std::str::{FromStr, ParseBoolError};
 
 #[derive(Debug)]
@@ -59,7 +60,19 @@ fn read_tasks(file: &mut File) -> std::io::Result<Vec<Task>> {
     Ok(tasks)
 }
 
-fn add_task(file: &mut File, tasks: &mut Vec<Task>, title: String) -> std::io::Result<()> {
+fn write_tasks(file: &mut File, tasks: &mut Vec<Task>) -> std::io::Result<()> {
+    file.set_len(0)?;
+    file.seek(io::SeekFrom::Start(0))?;
+
+    for task in tasks {
+        let file_row = format!("{},{},{}\n", task.id, task.title, task.completed);
+        file.write_all(file_row.as_bytes())?;
+    }
+
+    Ok(())
+}
+
+fn add_task(tasks: &mut Vec<Task>, title: String) -> std::io::Result<()> {
     let mut id: isize = 0;
 
     if tasks.len() > 0 {
@@ -71,9 +84,6 @@ fn add_task(file: &mut File, tasks: &mut Vec<Task>, title: String) -> std::io::R
         title: format!("{} {}", title, id),
         completed: false,
     };
-
-    let file_row = format!("{},{},{}\n", task.id, task.title, task.completed);
-    file.write_all(file_row.as_bytes())?;
 
     tasks.push(task);
 
@@ -89,9 +99,11 @@ fn main() -> std::io::Result<()> {
 
     let mut tasks = read_tasks(&mut file)?;
 
-    add_task(&mut file, &mut tasks, "Task".to_string())?;
-    add_task(&mut file, &mut tasks, "Task".to_string())?;
-    add_task(&mut file, &mut tasks, "Task".to_string())?;
+    add_task(&mut tasks, "Task".to_string())?;
+    add_task(&mut tasks, "Task".to_string())?;
+    add_task(&mut tasks, "Task".to_string())?;
+
+    write_tasks(&mut file, &mut tasks)?;
 
     println!("{:#?}", tasks);
 
