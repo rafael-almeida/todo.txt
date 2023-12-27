@@ -1,7 +1,6 @@
 use std::fs::{File, OpenOptions};
 use std::io::{self, prelude::*};
 use std::num::ParseIntError;
-use std::os::unix::fs::FileExt;
 use std::str::{FromStr, ParseBoolError};
 
 #[derive(Debug)]
@@ -90,6 +89,16 @@ fn add_task(tasks: &mut Vec<Task>, title: String) -> std::io::Result<()> {
     Ok(())
 }
 
+fn toggle_task(tasks: &mut Vec<Task>, id: isize) -> std::io::Result<()> {
+    for task in tasks {
+        if task.id == id {
+            task.completed = !task.completed;
+        }
+    }
+
+    Ok(())
+}
+
 fn main() -> std::io::Result<()> {
     let mut file = OpenOptions::new()
         .create(true)
@@ -102,6 +111,7 @@ fn main() -> std::io::Result<()> {
     add_task(&mut tasks, "Task".to_string())?;
     add_task(&mut tasks, "Task".to_string())?;
     add_task(&mut tasks, "Task".to_string())?;
+    toggle_task(&mut tasks, 0)?;
 
     write_tasks(&mut file, &mut tasks)?;
 
