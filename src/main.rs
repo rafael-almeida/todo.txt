@@ -1,9 +1,9 @@
+use clap::{Parser, Subcommand};
 use std::fs::{File, OpenOptions};
 use std::io::{self, prelude::*};
 use std::num::ParseIntError;
 use std::str::{FromStr, ParseBoolError};
 
-#[derive(Debug)]
 struct Task {
     id: isize,
     title: String,
@@ -80,7 +80,7 @@ fn add_task(tasks: &mut Vec<Task>, title: String) {
 
     let task = Task {
         id,
-        title: format!("{} {}", title, id),
+        title,
         completed: false,
     };
 
@@ -127,6 +127,21 @@ fn display_tasks(tasks: &[Task]) {
     }
 }
 
+#[derive(Parser)]
+#[command(author)]
+struct Cli {
+    #[command[subcommand]]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    List {},
+    Add { name: Option<String> },
+    Delete { id: Option<String> },
+    Tick { id: Option<String> },
+}
+
 fn main() -> std::io::Result<()> {
     let mut file = OpenOptions::new()
         .create(true)
@@ -135,16 +150,52 @@ fn main() -> std::io::Result<()> {
         .open("data.txt")?;
 
     let mut tasks = read_tasks(&mut file)?;
+    let cli = Cli::parse();
 
-    // add_task(&mut tasks, "Task".to_string());
-    // add_task(&mut tasks, "Task".to_string());
-    // add_task(&mut tasks, "Task".to_string());
-    toggle_task(&mut tasks, 0);
-    remove_task(&mut tasks, 1);
+    match &cli.command {
+        Commands::List {} => {
+            display_tasks(&tasks);
+        }
+        Commands::Add { name } => {
+            if let Some(name_str) = name {
+                add_task(&mut tasks, name_str.to_string());
+                display_tasks(&tasks);
+                write_tasks(&mut file, &mut tasks)?;
+            } else {
+                println!("Title is required");
+            }
+        }
+        Commands::Delete { id } => {
+            if let Some(id_str) = id {
+                match id_str.parse::<isize>() {
+                    Ok(x) => {
+                        remove_task(&mut tasks, x);
+                        display_tasks(&tasks);
+                        write_tasks(&mut file, &mut tasks)?;
+                    }
 
-    display_tasks(&tasks);
+                    Err(x) => println!("Unable to parse id {}", x),
+                }
+            } else {
+                println!("Id is required");
+            }
+        }
+        Commands::Tick { id } => {
+            if let Some(id_str) = id {
+                match id_str.parse::<isize>() {
+                    Ok(x) => {
+                        toggle_task(&mut tasks, x);
+                        display_tasks(&tasks);
+                        write_tasks(&mut file, &mut tasks)?;
+                    }
 
-    write_tasks(&mut file, &mut tasks)?;
+                    Err(x) => println!("Unable to parse id {}", x),
+                }
+            } else {
+                println!("Id is required");
+            }
+        }
+    }
 
     Ok(())
 }
