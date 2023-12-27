@@ -71,7 +71,7 @@ fn write_tasks(file: &mut File, tasks: &mut Vec<Task>) -> std::io::Result<()> {
     Ok(())
 }
 
-fn add_task(tasks: &mut Vec<Task>, title: String) -> std::io::Result<()> {
+fn add_task(tasks: &mut Vec<Task>, title: String) {
     let mut id: isize = 0;
 
     if tasks.len() > 0 {
@@ -85,18 +85,42 @@ fn add_task(tasks: &mut Vec<Task>, title: String) -> std::io::Result<()> {
     };
 
     tasks.push(task);
-
-    Ok(())
 }
 
-fn toggle_task(tasks: &mut Vec<Task>, id: isize) -> std::io::Result<()> {
+fn toggle_task(tasks: &mut Vec<Task>, id: isize) {
     for task in tasks {
         if task.id == id {
             task.completed = !task.completed;
         }
     }
+}
 
-    Ok(())
+fn display_tasks(tasks: &[Task]) {
+    let mut rows_len: [usize; 3] = [0, 0, 0];
+
+    for task in tasks {
+        rows_len[0] = rows_len[0].max(task.id.to_string().len());
+        rows_len[1] = rows_len[1].max(task.title.to_string().len());
+        rows_len[2] = rows_len[2].max(task.completed.to_string().len());
+    }
+
+    let a = rows_len[0];
+    let b = rows_len[1];
+    let c = rows_len[2];
+    let w = a + b + c + 10;
+
+    println!("{:->w$}", "-");
+    println!("{:^w$}", "Tasks");
+    println!("{:->w$}", "-");
+
+    for task in tasks {
+        println!(
+            "| {:a$} | {:b$} | {:c$} |",
+            task.id,
+            task.title,
+            task.completed.to_string()
+        );
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -108,14 +132,14 @@ fn main() -> std::io::Result<()> {
 
     let mut tasks = read_tasks(&mut file)?;
 
-    add_task(&mut tasks, "Task".to_string())?;
-    add_task(&mut tasks, "Task".to_string())?;
-    add_task(&mut tasks, "Task".to_string())?;
-    toggle_task(&mut tasks, 0)?;
+    // add_task(&mut tasks, "Task".to_string());
+    // add_task(&mut tasks, "Task".to_string());
+    // add_task(&mut tasks, "Task".to_string());
+    toggle_task(&mut tasks, 0);
+
+    display_tasks(&tasks);
 
     write_tasks(&mut file, &mut tasks)?;
-
-    println!("{:#?}", tasks);
 
     Ok(())
 }
