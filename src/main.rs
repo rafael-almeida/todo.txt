@@ -100,46 +100,45 @@ fn toggle_task(tasks: &mut Vec<Task>, id: isize) {
 }
 
 fn display_tasks(tasks: &[Task]) {
-    let mut rows_len: [usize; 3] = [0, 0, 0];
+    let head: [&str; 2] = ["id", "title"];
+    let mut rows_len: [usize; 2] = head.map(|x| x.len());
 
     for task in tasks {
         rows_len[0] = rows_len[0].max(task.id.to_string().len());
         rows_len[1] = rows_len[1].max(task.title.to_string().len());
-        rows_len[2] = rows_len[2].max(task.completed.to_string().len());
     }
 
     let a = rows_len[0];
     let b = rows_len[1];
-    let c = rows_len[2];
-    let w = a + b + c + 10;
+    let w = a + b + 7;
 
     println!("{:->w$}", "-");
-    println!("{:^w$}", "Tasks");
-    println!("{:->w$}", "-");
+    println!("| {:a$} | {:b$} |", head[0], head[1]);
+    println!("| {:->a$} | {:->b$} |", "-", "-");
 
-    for task in tasks {
-        println!(
-            "| {:a$} | {:b$} | {:c$} |",
-            task.id,
-            task.title,
-            task.completed.to_string()
-        );
+    for t in tasks {
+        println!("| {:a$} | {:b$} |", t.id, t.title,);
     }
+
+    println!("{:->w$}", "-");
 }
 
 #[derive(Parser)]
-#[command(author)]
 struct Cli {
-    #[command[subcommand]]
+    #[clap(subcommand)]
     command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
+    #[clap(alias = "ls")]
     List {},
+
+    #[clap(alias = "a")]
     Add { name: Option<String> },
-    Delete { id: Option<String> },
-    Tick { id: Option<String> },
+
+    #[clap(alias = "rm")]
+    Remove { id: Option<String> },
 }
 
 fn main() -> std::io::Result<()> {
@@ -147,7 +146,7 @@ fn main() -> std::io::Result<()> {
         .create(true)
         .read(true)
         .append(true)
-        .open("data.txt")?;
+        .open("todo.txt")?;
 
     let mut tasks = read_tasks(&mut file)?;
     let cli = Cli::parse();
@@ -165,26 +164,11 @@ fn main() -> std::io::Result<()> {
                 println!("Title is required");
             }
         }
-        Commands::Delete { id } => {
+        Commands::Remove { id } => {
             if let Some(id_str) = id {
                 match id_str.parse::<isize>() {
                     Ok(x) => {
                         remove_task(&mut tasks, x);
-                        display_tasks(&tasks);
-                        write_tasks(&mut file, &mut tasks)?;
-                    }
-
-                    Err(x) => println!("Unable to parse id {}", x),
-                }
-            } else {
-                println!("Id is required");
-            }
-        }
-        Commands::Tick { id } => {
-            if let Some(id_str) = id {
-                match id_str.parse::<isize>() {
-                    Ok(x) => {
-                        toggle_task(&mut tasks, x);
                         display_tasks(&tasks);
                         write_tasks(&mut file, &mut tasks)?;
                     }
