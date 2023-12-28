@@ -91,14 +91,6 @@ fn remove_task(tasks: &mut Vec<Task>, id: isize) {
     tasks.retain(|task| task.id != id);
 }
 
-fn toggle_task(tasks: &mut Vec<Task>, id: isize) {
-    for task in tasks {
-        if task.id == id {
-            task.completed = !task.completed;
-        }
-    }
-}
-
 fn display_tasks(tasks: &[Task]) {
     let head: [&str; 2] = ["id", "title"];
     let mut rows_len: [usize; 2] = head.map(|x| x.len());
@@ -173,7 +165,7 @@ fn main() -> std::io::Result<()> {
                         write_tasks(&mut file, &mut tasks)?;
                     }
 
-                    Err(x) => println!("Unable to parse id {}", x),
+                    Err(x) => println!("Unable to parse id - {}", x),
                 }
             } else {
                 println!("Id is required");
