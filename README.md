@@ -4,7 +4,7 @@
 
 ---
 
-A simple Command Line Interface (CLI) task manager inspired by [todo.txt](https://github.com/todotxt/todo.txt-cli) and written in Rust. 
+A simple Command Line Interface (CLI) task manager written in Rust. 
 
 Usage
 
@@ -15,6 +15,6 @@ Usage
         Add Task: 
             cargo run -- add "Task Name"
             cargo run -- a "Task Name"
-        Remove Task: 
-            cargo run -- rm [Task ID]
+        Remove Task:
             cargo run -- remove [Task ID]
+            cargo run -- rm [Task ID]
